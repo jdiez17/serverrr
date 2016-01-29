@@ -4,10 +4,12 @@ import io from 'socket.io';
 import term from 'term.js';
 
 var app = express();
-var srv = app.listen(8081);
+var srv = app.listen(8081, '0.0.0.0');
 var sio = io.listen(srv);
 
 app.use(term.middleware());
+
+console.log("Server starting!");
 
 sio.sockets.on('connection', (socket) => {
     // TODO: args (cols, rows)
