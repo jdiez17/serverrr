@@ -8,6 +8,7 @@ var app = express();
 var srv = http.Server(app);
 var sio = null;
 var cid = null;
+var state = "init";
 
 function setupHandlers() {
     sio.sockets.on('connection', (socket) => {
@@ -20,22 +21,27 @@ function setupHandlers() {
             env: process.env
         });
 
+        state = "connected";
         terminal.on('data', (data) => { socket.emit('out', data); });
         socket.on('in', (data) => { terminal.write(data); });
 
         terminal.on('close', () => {
+            staet = "disconnected";
             console.log("Terminal closed!");
             socket.emit("kill");
         });
 
         socket.on('disconnect', () => {
+            state = "disconnected";
             console.log("Disconnect!");
             terminal.destroy();
         });
     });
+
+    state = "ready";
 }
 
-app.get("/control/ping/:id", (req, res) => {
+app.get("/control/state/:id", (req, res) => {
     if(!cid && req.params.id != null) {
         cid = req.params.id;
         if(cid != null) {
@@ -45,7 +51,8 @@ app.get("/control/ping/:id", (req, res) => {
             console.log(cid);
         }
     }
-    res.send("pong");
+
+    res.send(state);
 });
 
 srv.listen(8081);
