@@ -2,14 +2,19 @@ import pty from 'pty.js';
 import express from 'express';
 import io from 'socket.io';
 import term from 'term.js';
+import http from 'http';
 
 var app = express();
-var srv = app.listen(8081, '0.0.0.0');
-var sio = io.listen(srv);
+var srv = http.Server(app);
+var sio = io(srv);
 
-app.use(term.middleware());
+srv.listen(8081);
 
 console.log("Server starting!");
+
+app.get("/control/ping", (req, res) => {
+    res.send("pong");
+});
 
 sio.sockets.on('connection', (socket) => {
     // TODO: args (cols, rows)
